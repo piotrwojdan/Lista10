@@ -1,0 +1,78 @@
+﻿@using System.Collections
+@{
+	ViewData["Title"] = "Shop";
+}
+@section articles
+{
+	<div class="container-fluid">
+		<div class="row">
+			<div class="col-sm-1">
+			
+				<div class="d-flex">
+					<div class="list-group bg-light border-light align-content-md-center">
+						<div class="border-bottom"><h5>Category</h5></div>
+						<a class="list-group-item list-group-item-action bg-light border-light p-md-3" asp-action="Index" asp-route-Id="-1">All</a>
+						@foreach (var cat in ViewBag.Categories)
+						{
+							<a class="list-group-item list-group-item-action bg-light border-light p-md-3" asp-action="Index" asp-route-Id="@cat.Id">@cat.Name</a>
+						}
+
+					</div>
+				</div>
+			
+			</div>
+
+			<div class="col-sm-11">
+			
+				<table class="table">
+					<thead>
+					<tr>
+						<th>
+							<p>Name</p>
+						</th>
+						<th>
+							<p>Price</p>
+						</th>
+						<th>
+							<p>Picture</p>
+						</th>
+						<th>
+							<p>Category</p>
+						</th>
+						<th></th>
+					</tr>
+					</thead>
+					<tbody>
+					@foreach (var item in ViewBag.Articles as IEnumerable<Article>)
+					{
+						<tr>
+							<td>
+								@Html.DisplayFor(modelItem => item.Name)
+							</td>
+							<td>
+								@Html.DisplayFor(modelItem => item.Price)
+							</td>
+							<td>
+								<img src="/@Url.Content(item.Picture)" width="10%" height="10%"/>
+							</td>
+							<td>
+								@foreach (var cat in ViewBag.Categories as IEnumerable<Category>)
+								{
+									if (item.Category == cat.Id)
+									{
+										<p>@cat.Name</p>
+									}
+								}
+							</td>
+							<td>
+								<a asp-action="Details" asp-route-id="@item.Id">Details</a> 
+							</td>
+						</tr>
+					}
+					</tbody>
+				</table>
+			
+			</div>
+		</div>
+	</div>
+}
