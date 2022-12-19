@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
 using Lista10.Models;
+using Microsoft.AspNetCore.Http;
 
 namespace Lista10.Controllers
 {
@@ -24,10 +25,10 @@ namespace Lista10.Controllers
         //     return View();
         // }
 
-        public async Task<IActionResult> Index(int Id)
+        public async Task<IActionResult> Index(int? Id)
         {
             List<Article> articles;
-            if (Id == -1)
+            if (Id == null || Id == -1)
             {
                 articles = await _context.Article.ToListAsync();
             }
@@ -38,8 +39,6 @@ namespace Lista10.Controllers
 
             var categories = await _context.Category.ToListAsync();
 
-            // TempData["articles"] = articles;
-            // TempData["categories"] = categories;
 
             ViewBag.articles = articles;
             ViewBag.categories = categories;
@@ -64,6 +63,107 @@ namespace Lista10.Controllers
             ViewBag.Categories = _context.Category;
 
             return View(article);
+        }
+
+        public async Task<IActionResult> AddToBasket(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var article = await _context.Article
+                .FirstOrDefaultAsync(m => m.Id == id);
+
+            AddArticleToBasket(article.Id);
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        public async Task<IActionResult> AddInBasket(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var article = await _context.Article
+                .FirstOrDefaultAsync(m => m.Id == id);
+
+            AddArticleToBasket(article.Id);
+
+            return RedirectToAction(nameof(Basket));
+        }
+
+        public async Task<IActionResult> RemoveFromBasket(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var article = await _context.Article
+                .FirstOrDefaultAsync(m => m.Id == id);
+
+            RemoveArticleFromBasket(article.Id);
+
+            return RedirectToAction(nameof(Basket));
+        }
+
+        public async Task<IActionResult> Basket()
+        {
+            List<(Article, int)> list = new List<(Article, int)>();
+
+            foreach (var (articleId, value) in Request.Cookies.Where(c => c.Key.Contains("article")).ToList())
+            {
+                var id = int.Parse(articleId.Substring(7));
+                var valueInt = int.Parse(value);
+
+                var article = await _context.Article
+                    .FirstOrDefaultAsync(m => m.Id == id);
+
+                list.Add((article, valueInt));
+            }
+
+
+            ViewBag.articlesInBasket = list;
+            ViewBag.Categories = _context.Category;
+
+            return View();
+        }
+
+        public void AddArticleToBasket(int Id)
+        {
+            // CookieOptions options = new CookieOptions();  // to jakby zrobic na tydzien ten koszyk by trzeba dodac
+            if (Request.Cookies.ContainsKey($"article{Id}"))
+            {
+                string value;
+                Request.Cookies.TryGetValue($"article{Id}", out value);
+                Response.Cookies.Append($"article{Id}", (int.Parse(value) + 1).ToString());
+            }
+            else
+            {
+                Response.Cookies.Append($"article{Id}", "1");
+            }
+        }
+
+        public void RemoveArticleFromBasket(int Id)
+        {
+            // CookieOptions options = new CookieOptions();
+            if (Request.Cookies.ContainsKey($"article{Id}"))
+            {
+                string value;
+                Request.Cookies.TryGetValue($"article{Id}", out value);
+                var res = int.Parse(value) - 1;
+                if (res > 0)
+                {
+                    Response.Cookies.Append($"article{Id}", (int.Parse(value) - 1).ToString());
+                }
+                else
+                {
+                    Response.Cookies.Delete($"article{Id}");
+                }
+            }
         }
     }
 }

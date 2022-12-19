@@ -1,0 +1,62 @@
+﻿@using System.Collections
+@{
+	ViewData["Title"] = "Basket";
+}
+
+<table class="table">
+	<thead>
+	<tr>
+		<th>
+			<p>Name</p>
+		</th>
+		<th>
+			<p>Price</p>
+		</th>
+		<th>
+			<p>Picture</p>
+		</th>
+		<th>
+			<p>Category</p>
+		</th>
+			<th>
+				<p>Pcs.</p>
+			</th>
+		<th><a asp-action="Basket"><img src="/images/basket.svg" width="40px" height="40px" /></a></th>
+	</tr>
+	</thead>
+	<tbody>
+		@foreach (var (item, value) in ViewBag.articlesInBasket as IEnumerable<(Article, int)>)
+	{
+		<tr>
+			<td>
+				@Html.DisplayFor(modelItem => item.Name)
+			</td>
+			<td>
+				@Html.DisplayFor(modelItem => item.Price)
+			</td>
+			<td>
+				<img src="/@Url.Content(item.Picture)" width="10%" height="10%"/>
+			</td>
+			<td>
+				@foreach (var cat in ViewBag.Categories as IEnumerable<Category>)
+				{
+					if (item.Category == cat.Id)
+					{
+						<p>@cat.Name</p>
+					}
+				}
+			</td>
+			<td>
+				<p>@value</p>
+			</td>
+			<td>
+				<a asp-action="AddInBasket" asp-route-id="@item.Id"><img src="/images/up-arrow.jpg" width="20px" height="20px" /></a> |
+				<a asp-action="RemoveFromBasket" asp-route-id="@item.Id"><img src="/images/down_arrow.jpg" width="20px" height="20px" /></a>
+			</td>
+		</tr>
+	}
+	</tbody>
+</table>
+<div>
+	<a asp-action="Index" asp-route-Id="-1">Back to List</a>
+</div>
