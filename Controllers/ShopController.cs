@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Lista10.Data;
 using Microsoft.AspNetCore.Mvc;
@@ -110,9 +111,25 @@ namespace Lista10.Controllers
             return RedirectToAction(nameof(Basket));
         }
 
+        public async Task<IActionResult> RemoveEntirelyFromBasket(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var article = await _context.Article
+                .FirstOrDefaultAsync(m => m.Id == id);
+
+            Response.Cookies.Delete($"article{id}");
+
+            return RedirectToAction(nameof(Basket));
+        }
+
         public async Task<IActionResult> Basket()
         {
             List<(Article, int)> list = new List<(Article, int)>();
+            double price = 0;
 
             foreach (var (articleId, value) in Request.Cookies.Where(c => c.Key.Contains("article")).ToList())
             {
@@ -122,42 +139,56 @@ namespace Lista10.Controllers
                 var article = await _context.Article
                     .FirstOrDefaultAsync(m => m.Id == id);
 
-                list.Add((article, valueInt));
+                if (article == null)
+                {
+                    ViewBag.deletedMeassage = "Artykuł, który był w koszyku nie jest już dostęny!";
+                    Response.Cookies.Delete(articleId);
+                }
+                else
+                {
+                    price += valueInt * article.Price;
+                    list.Add((article, valueInt));
+                }
             }
 
-
-            ViewBag.articlesInBasket = list;
+            ViewBag.articlesInBasket = list.OrderBy(t => t.Item1.Name);
             ViewBag.Categories = _context.Category;
+            ViewBag.isEmpty = (list.Count == 0);
+            ViewBag.Sum = price;
 
             return View();
         }
 
         public void AddArticleToBasket(int Id)
         {
-            // CookieOptions options = new CookieOptions();  // to jakby zrobic na tydzien ten koszyk by trzeba dodac
+            CookieOptions options = new CookieOptions();
+            options.Expires = DateTimeOffset.Now.AddDays(7);
             if (Request.Cookies.ContainsKey($"article{Id}"))
             {
                 string value;
                 Request.Cookies.TryGetValue($"article{Id}", out value);
-                Response.Cookies.Append($"article{Id}", (int.Parse(value) + 1).ToString());
+                Response.Cookies.Append($"article{Id}", (int.Parse(value) + 1).ToString(), options);
             }
             else
             {
-                Response.Cookies.Append($"article{Id}", "1");
+                Response.Cookies.Append($"article{Id}", "1", options);
             }
         }
 
         public void RemoveArticleFromBasket(int Id)
         {
-            // CookieOptions options = new CookieOptions();
             if (Request.Cookies.ContainsKey($"article{Id}"))
             {
+                CookieOptions options = new CookieOptions();
+                options.Expires = DateTimeOffset.Now.AddDays(7);
+
                 string value;
                 Request.Cookies.TryGetValue($"article{Id}", out value);
                 var res = int.Parse(value) - 1;
+
                 if (res > 0)
                 {
-                    Response.Cookies.Append($"article{Id}", (int.Parse(value) - 1).ToString());
+                    Response.Cookies.Append($"article{Id}", (int.Parse(value) - 1).ToString(), options);
                 }
                 else
                 {

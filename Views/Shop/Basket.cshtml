@@ -3,60 +3,141 @@
 	ViewData["Title"] = "Basket";
 }
 
+<div id="myModal" class="modal fade" role="dialog">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h2>Information!</h2>
+			</div>
+			<div class="modal-body">
+				<p>@ViewBag.deletedMeassage</p>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-info" data-dismiss="modal">Okay</button>
+			</div>
+		</div>
+	</div>
+</div>
+
 <table class="table">
 	<thead>
 	<tr>
 		<th>
+		@if (ViewBag.isEmpty)
+		{
+			<h3>Twój koszyk jest pusty</h3>
+		}
+		else
+		{
 			<p>Name</p>
+		}
+		</th>
+		
+		<th>
+		@if (!ViewBag.isEmpty)
+		{
+					<p>Picture</p>
+		}
 		</th>
 		<th>
-			<p>Price</p>
+		@if (!ViewBag.isEmpty)
+		{
+					<p>Category</p>
+		}
 		</th>
 		<th>
-			<p>Picture</p>
+		@if (!ViewBag.isEmpty)
+		{
+					<p>Pcs.</p>
+		}
 		</th>
 		<th>
-			<p>Category</p>
+		@if (!ViewBag.isEmpty)
+		{
+					<p>Price</p>
+		}
 		</th>
-			<th>
-				<p>Pcs.</p>
-			</th>
 		<th><a asp-action="Basket"><img src="/images/basket.svg" width="40px" height="40px" /></a></th>
+		<th></th>
 	</tr>
 	</thead>
 	<tbody>
-		@foreach (var (item, value) in ViewBag.articlesInBasket as IEnumerable<(Article, int)>)
-	{
-		<tr>
-			<td>
-				@Html.DisplayFor(modelItem => item.Name)
-			</td>
-			<td>
-				@Html.DisplayFor(modelItem => item.Price)
-			</td>
-			<td>
-				<img src="/@Url.Content(item.Picture)" width="10%" height="10%"/>
-			</td>
-			<td>
-				@foreach (var cat in ViewBag.Categories as IEnumerable<Category>)
-				{
-					if (item.Category == cat.Id)
+	@foreach (var (item, value) in ViewBag.articlesInBasket as IEnumerable<(Article, int)>)
+		{
+			<tr>
+				<td>
+					@Html.DisplayFor(modelItem => item.Name)
+				</td>
+				<td>
+					<img src="/@Url.Content(item.Picture)" width="10%" height="10%"/>
+				</td>
+				<td>
+					@foreach (var cat in ViewBag.Categories as IEnumerable<Category>)
 					{
-						<p>@cat.Name</p>
+						if (item.Category == cat.Id)
+						{
+							<p>@cat.Name</p>
+						}
 					}
-				}
-			</td>
-			<td>
-				<p>@value</p>
-			</td>
-			<td>
-				<a asp-action="AddInBasket" asp-route-id="@item.Id"><img src="/images/up-arrow.jpg" width="20px" height="20px" /></a> |
-				<a asp-action="RemoveFromBasket" asp-route-id="@item.Id"><img src="/images/down_arrow.jpg" width="20px" height="20px" /></a>
-			</td>
-		</tr>
-	}
+				</td>
+				<td>
+					<p>@value</p>
+				</td>
+				<td>
+					@Html.DisplayFor(modelItem => item.Price)
+				</td>
+				<td>
+					<div class="col">
+						<a asp-action="AddInBasket" asp-route-id="@item.Id"><img src="/images/up-arrow.jpg" width="20px" height="20px"/></a>
+						<a asp-action="RemoveFromBasket" asp-route-id="@item.Id"><img src="/images/down_arrow.jpg" width="20px" height="20px"/></a>
+					</div>
+				</td>
+				<td>
+					<a asp-action="RemoveEntirelyFromBasket" asp-route-id="@item.Id"><img src="/images/x_symbol.svg" width="20px" height="20px" /></a>
+				</td>
+			</tr>
+		}
 	</tbody>
+	<tfoot>
+		<tr>
+			<th>
+			</th>
+			<th>
+			</th>
+			<th>
+			</th>
+			<th>
+				@if (!ViewBag.isEmpty)
+				{
+					<p><b>Sum</b></p>
+				}
+			</th>
+			<th>
+				@if (!ViewBag.isEmpty)
+				{
+					<p>@ViewBag.Sum</p>
+				}
+			</th>
+			<th>
+			</th>
+			<th></th>
+		</tr>
+	</tfoot>
 </table>
 <div>
-	<a asp-action="Index" asp-route-Id="-1">Back to List</a>
+	<a asp-action="Index" asp-route-Id="-1">Back to the Shop</a>
 </div>
+
+@section Scripts {
+	<script type="text/javascript">
+		function openModal() {
+			$('#myModal').modal('show');
+		}
+		
+		$(document).ready(function() {
+			var msg = "@ViewBag.deletedMeassage";
+			if (msg) 
+				openModal();
+		})
+	</script>
+}
