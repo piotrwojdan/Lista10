@@ -9,9 +9,12 @@ using Microsoft.EntityFrameworkCore;
 using Lista10.Data;
 using Lista10.Models;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Authorization;
+using System.Data;
 
 namespace Lista10.Controllers
 {
+    [Authorize(Roles = "Admin")]
     public class ArticlesController : Controller
     {
         private readonly Lista10Context _context;

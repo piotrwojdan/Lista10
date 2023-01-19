@@ -1,12 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Lista10.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
 using Lista10.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Newtonsoft.Json;
 
 namespace Lista10.Controllers
 {
@@ -66,6 +69,7 @@ namespace Lista10.Controllers
             return View(article);
         }
 
+        [Authorize(Policy = "NotAdmin")]
         public async Task<IActionResult> AddToBasket(int? id)
         {
             if (id == null)
@@ -80,7 +84,7 @@ namespace Lista10.Controllers
 
             return RedirectToAction(nameof(Index));
         }
-
+        [Authorize(Policy = "NotAdmin")]
         public async Task<IActionResult> AddInBasket(int? id)
         {
             if (id == null)
@@ -95,6 +99,7 @@ namespace Lista10.Controllers
 
             return RedirectToAction(nameof(Basket));
         }
+        [Authorize(Policy = "NotAdmin")]
 
         public async Task<IActionResult> RemoveFromBasket(int? id)
         {
@@ -110,7 +115,7 @@ namespace Lista10.Controllers
 
             return RedirectToAction(nameof(Basket));
         }
-
+        [Authorize(Policy = "NotAdmin")]
         public async Task<IActionResult> RemoveEntirelyFromBasket(int? id)
         {
             if (id == null)
@@ -126,37 +131,61 @@ namespace Lista10.Controllers
             return RedirectToAction(nameof(Basket));
         }
 
+        [Authorize(Policy = "NotAdmin")]
         public async Task<IActionResult> Basket()
         {
-            List<(Article, int)> list = new List<(Article, int)>();
-            double price = 0;
+            var (list, price) = getBasketItems();
 
-            foreach (var (articleId, value) in Request.Cookies.Where(c => c.Key.Contains("article")).ToList())
-            {
-                var id = int.Parse(articleId.Substring(7));
-                var valueInt = int.Parse(value);
-
-                var article = await _context.Article
-                    .FirstOrDefaultAsync(m => m.Id == id);
-
-                if (article == null)
-                {
-                    ViewBag.deletedMeassage = "Artykuł, który był w koszyku nie jest już dostęny!";
-                    Response.Cookies.Delete(articleId);
-                }
-                else
-                {
-                    price += valueInt * article.Price;
-                    list.Add((article, valueInt));
-                }
-            }
-
-            ViewBag.articlesInBasket = list.OrderBy(t => t.Item1.Name);
+            ViewBag.articlesInBasket = list;
             ViewBag.Categories = _context.Category;
             ViewBag.isEmpty = (list.Count == 0);
             ViewBag.Sum = price;
 
             return View();
+        }
+
+        [Authorize]
+        [Authorize(Policy = "NotAdmin")]
+        [HttpGet]
+        public async Task<IActionResult> Summary()
+        {
+            var (list, price) = getBasketItems();
+
+            ViewBag.articlesInBasket = list;
+            ViewBag.Categories = _context.Category;
+            ViewBag.Sum = price;
+
+            return View();
+        }
+
+        [HttpPost]
+        [Authorize(Policy = "NotAdmin")]
+        public async Task<IActionResult> Summary([Bind("Name,Surname,Street,HouseNumber,City,PostalCode,Payment")]Order order)
+        {
+            var (list, price) = getBasketItems();
+
+            order.CartItems = list;
+            order.Price = price;
+
+            var s = JsonConvert.SerializeObject(order);
+            TempData["order"] = s;
+
+            return RedirectToAction(nameof(SummaryEnd));
+        }
+
+        public async Task<IActionResult> SummaryEnd()
+        {
+            var s = TempData["order"] as string;
+            var order = JsonConvert.DeserializeObject<Order>(s);
+
+            ViewBag.Categories = _context.Category;
+
+            foreach (var (article, _) in order.CartItems)
+            {
+                Response.Cookies.Delete($"article{article.Id}");
+            }
+
+            return View(order);
         }
 
         public void AddArticleToBasket(int Id)
@@ -195,6 +224,35 @@ namespace Lista10.Controllers
                     Response.Cookies.Delete($"article{Id}");
                 }
             }
+        }
+
+        private (List<(Article, int)>, double) getBasketItems()
+        {
+            List<(Article, int)> list = new List<(Article, int)>();
+            double price = 0;
+
+            foreach (var (articleId, value) in Request.Cookies.Where(c => c.Key.Contains("article")).ToList())
+            {
+                var id = int.Parse(articleId.Substring(7));
+                var valueInt = int.Parse(value);
+
+                var article =  _context.Article
+                    .FirstOrDefault(m => m.Id == id);
+
+                if (article == null)
+                {
+                    ViewBag.deletedMeassage = "Artykuł, który był w koszyku nie jest już dostęny!";
+                    Response.Cookies.Delete(articleId);
+                }
+                else
+                {
+                    price += valueInt * article.Price;
+                    list.Add((article, valueInt));
+                }
+            }
+
+            list = list.OrderBy(t => t.Item1.Name).ToList();
+            return (list, price);
         }
     }
 }

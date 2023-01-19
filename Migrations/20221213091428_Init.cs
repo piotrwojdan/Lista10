@@ -1,5 +1,6 @@
 ﻿using Lista10.Models;
 using Microsoft.EntityFrameworkCore.Migrations;
+using System;
 
 namespace Lista10.Migrations
 {
@@ -37,8 +38,6 @@ namespace Lista10.Migrations
                     table.PrimaryKey("PK_Article", x => x.Id);
                     table.ForeignKey("FK_CATEGORY", x => x.Category, "Category", "Id");
                 });
-
-            
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)

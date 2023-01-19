@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Lista10.Data;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace Lista10
@@ -28,10 +29,21 @@ namespace Lista10
             services.AddControllersWithViews();
             services.AddDbContextPool<Lista10Context>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("Lista10")));
+            services.AddDefaultIdentity<IdentityUser>()
+                .AddRoles<IdentityRole>()
+                .AddEntityFrameworkStores<Lista10Context>();
+            services.AddAuthorization(options => {
+                options.AddPolicy("NotAdmin", policy =>
+                {
+                    policy.RequireAssertion(context => !context.User.IsInRole("Admin"));
+                });
+            });
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env,
+            UserManager<IdentityUser> userManager, RoleManager<IdentityRole> roleManager)
         {
             if (env.IsDevelopment())
             {
@@ -48,7 +60,10 @@ namespace Lista10
 
             app.UseRouting();
 
+            app.UseAuthentication();
             app.UseAuthorization();
+
+            MyIdentityDataInitilizer.SeedData(userManager, roleManager);
 
             var supportedCultures = new[] { "en", "fr", "es" };
             var localisationOptions = new RequestLocalizationOptions().SetDefaultCulture(supportedCultures[0])
@@ -61,6 +76,7 @@ namespace Lista10
                 endpoints.MapControllerRoute(
                     name: "default",
                     pattern: "{controller=Home}/{action=Index}/{id?}");
+                endpoints.MapRazorPages();
             });
         }
     }

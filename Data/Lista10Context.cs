@@ -1,9 +1,10 @@
 ﻿using Lista10.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
 namespace Lista10.Data
 {
-    public partial class Lista10Context : DbContext
+    public partial class Lista10Context : IdentityDbContext
     {
 
         public Lista10Context(DbContextOptions<Lista10Context> options) : base(options)
@@ -23,9 +24,10 @@ namespace Lista10.Data
 //             }
 //         }
         
-        // protected override void OnModelCreating(ModelBuilder modelBuilder)
-        // { 
-        //     
-        // }
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        { 
+            base.OnModelCreating(modelBuilder);
+            // modelBuilder.Seed();
+        }
     }
 }

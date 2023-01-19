@@ -1,0 +1,126 @@
+﻿@model Lista10.Models.Order
+
+@{
+	ViewData["Title"] = "Podsumowanie Kupna";
+}
+
+<h1>Zamówienie zostało złożone!</h1>
+
+<table class="table">
+	<thead>
+	<tr>
+		<th><p>Name</p></th>
+		<th><p>Picture</p></th>
+		<th><p>Category</p></th>
+		<th><p>Pcs.</p></th>
+		<th><p>Price</p></th>
+	</tr>
+	</thead>
+	<tbody>
+	@foreach (var (item, value) in Model.CartItems)
+	{
+		<tr>
+			<td>
+				@Html.DisplayFor(modelItem => item.Name)
+			</td>
+			<td>
+				<img src="/@Url.Content(item.Picture)" width="10%" height="10%" />
+			</td>
+			<td>
+				@foreach (var cat in ViewBag.Categories as IEnumerable<Category>)
+				{
+					if (item.Category == cat.Id)
+					{
+						<p>@cat.Name</p>
+					}
+				}
+			</td>
+			<td>
+				<p>@value</p>
+			</td>
+			<td>
+				@Html.DisplayFor(modelItem => item.Price)
+			</td>
+
+		</tr>
+	}
+	</tbody>
+	<tfoot>
+	<tr>
+		<th>
+		</th>
+		<th>
+		</th>
+		<th>
+		</th>
+		<th>
+			<p><b>Sum</b></p>
+		</th>
+		<th>
+			<p>@Model.Price</p>
+		</th>
+	</tr>
+	</tfoot>
+</table>
+
+<div>
+	<dl class="row">
+		<dt class = "col-sm-2">
+			@Html.DisplayNameFor(model => model.Name)
+		</dt>
+		<dd class = "col-sm-10">
+			@Html.DisplayFor(model => model.Name)
+		</dd>
+	</dl>
+	<dl class="row">
+		<dt class="col-sm-2">
+			@Html.DisplayNameFor(model => model.Surname)
+		</dt>
+		<dd class="col-sm-10">
+			@Html.DisplayFor(model => model.Surname)
+		</dd>
+	</dl>
+	<dl class="row">
+		<dt class = "col-sm-2">
+			@Html.DisplayNameFor(model => model.Street)
+		</dt>
+		<dd class = "col-sm-10">
+			@Html.DisplayFor(model => model.Street)
+		</dd>
+	</dl>
+	<dl class="row">
+		<dt class = "col-sm-2">
+			@Html.DisplayNameFor(model => model.HouseNumber)
+		</dt>
+		<dd class = "col-sm-10">
+			@Html.DisplayFor(model => model.HouseNumber)
+		</dd>
+	</dl>
+	<dl class="row">
+		<dt class="col-sm-2">
+			@Html.DisplayNameFor(model => model.City)
+		</dt>
+		<dd class="col-sm-10">
+			@Html.DisplayFor(model => model.City)
+		</dd>
+	</dl>
+	<dl class="row">
+		<dt class="col-sm-2">
+			@Html.DisplayNameFor(model => model.PostalCode)
+		</dt>
+		<dd class="col-sm-10">
+			@Html.DisplayFor(model => model.PostalCode)
+		</dd>
+	</dl>
+	<dl class="row">
+		<dt class="col-sm-2">
+			@Html.DisplayNameFor(model => model.Payment)
+		</dt>
+		<dd class="col-sm-10">
+			@Html.DisplayFor(model => model.Payment)
+		</dd>
+	</dl>
+</div>
+<div class="form-group">
+	<button class="btn"><a asp-action="Index" asp-route-Id="-1">Back to the shop!</a></button>
+</div>

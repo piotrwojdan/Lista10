@@ -39,7 +39,12 @@
 						<th>
 							<p>Category</p>
 						</th>
-						<th><a asp-action="Basket"><img src="/images/basket.svg" width="40px" height="40px"/></a></th>
+						<th>
+							@if (!User.IsInRole("Admin"))
+							{
+								<a asp-action="Basket"><img src="/images/basket.svg" width="40px" height="40px"/></a>
+							}
+						</th>
 					</tr>
 					</thead>
 					<tbody>
@@ -65,9 +70,14 @@
 								}
 							</td>
 							<td>
-								<a asp-action="Details" asp-route-id="@item.Id">Details</a> | 
-								<a asp-action="AddToBasket" asp-route-id="@item.Id">Add to basket</a> 
+								<a asp-action="Details" asp-route-id="@item.Id">Details</a>
+							@if (!User.IsInRole("Admin"))
+							{ 
+								<br/><a asp-action="AddToBasket" asp-route-id="@item.Id" > Add to basket</a>
+							}
 							</td>
+								
+								
 						</tr>
 					}
 					</tbody>

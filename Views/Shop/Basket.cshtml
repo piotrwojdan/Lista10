@@ -118,9 +118,14 @@
 					<p>@ViewBag.Sum</p>
 				}
 			</th>
-			<th>
+			<th colspan="2">
+				@if (!ViewBag.isEmpty)
+				{
+					<button class="btn">
+						<a asp-action="Summary" >Złóż zamówienie</a>
+					</button>
+				}
 			</th>
-			<th></th>
 		</tr>
 	</tfoot>
 </table>

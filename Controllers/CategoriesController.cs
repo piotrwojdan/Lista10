@@ -9,9 +9,12 @@ using Lista10.Data;
 using Lista10.Models;
 using System.IO;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Authorization;
+using System.Data;
 
 namespace Lista10.Controllers
 {
+    [Authorize(Roles = "Admin")]
     public class CategoriesController : Controller
     {
         private readonly Lista10Context _context;
