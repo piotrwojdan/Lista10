@@ -30,7 +30,7 @@ namespace Lista10.Controllers
         public async Task<IActionResult> Index()
         {
             ViewBag.Categories = _context.Category;
-            return View(await _context.Article.ToListAsync());
+            return View(await _context.Article.OrderBy(a => a.Id).ToListAsync());
         }
 
         // GET: Articles/Details/5

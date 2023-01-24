@@ -11,6 +11,8 @@ using System.Threading.Tasks;
 using Lista10.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Lab10.Models;
+using Lista10.Models;
 
 namespace Lista10
 {
@@ -26,12 +28,16 @@ namespace Lista10
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+
             services.AddControllersWithViews();
+
             services.AddDbContextPool<Lista10Context>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("Lista10")));
+
             services.AddDefaultIdentity<IdentityUser>()
                 .AddRoles<IdentityRole>()
                 .AddEntityFrameworkStores<Lista10Context>();
+
             services.AddAuthorization(options => {
                 options.AddPolicy("NotAdmin", policy =>
                 {

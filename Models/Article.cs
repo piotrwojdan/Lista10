@@ -8,7 +8,6 @@ namespace Lista10.Models
     public class Article
     {
         [Key]
-        [Required]
         public int Id { get; set; }
 
         [Required]
@@ -22,7 +21,7 @@ namespace Lista10.Models
         [NotMapped]
         public IFormFile PictureFile { get; set; }
 
-        public string Picture { get; set; }
+        public string? Picture { get; set; }
 
         [Required]
         public int Category { get; set; }
